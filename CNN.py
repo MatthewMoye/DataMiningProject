@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from torch.optim.lr_scheduler import StepLR
 
 class Net(nn.Module):
     def __init__(self):
@@ -66,7 +65,6 @@ def test(model, device, test_loader):
 
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(1)
-
 device = torch.device("cuda" if use_cuda else "cpu")
 
 # Change range of values to [0,1]
@@ -78,13 +76,11 @@ test_loader = torch.utils.data.DataLoader(datasets.CIFAR10('../data', train=Fals
 model = Net().to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
 for epoch in range(1, 20):
     start = time.time()
     print('------------\nepoch: ', epoch)
     train(model, device, train_loader, optimizer)
     test(model, device, test_loader)
-    scheduler.step()
     print(time.time()-start, 's\n')
 
 #torch.save(model.state_dict(), "CNN_model.pt")
