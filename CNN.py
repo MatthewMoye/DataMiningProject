@@ -14,8 +14,8 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.dropout1 = nn.Dropout(0.25)
         self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(in_features=8*8*128, out_features=512)
-        self.fc2 = nn.Linear(in_features=512, out_features=10)
+        self.fc1 = nn.Linear(8*8*128, 512)
+        self.fc2 = nn.Linear(512, 10)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -65,7 +65,6 @@ def test(model, device, test_loader):
 
 
 use_cuda = torch.cuda.is_available()
-print(use_cuda)
 torch.manual_seed(1)
 
 device = torch.device("cuda" if use_cuda else "cpu")
