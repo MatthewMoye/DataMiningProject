@@ -4,6 +4,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+torch.manual_seed(1)
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -46,7 +50,6 @@ def train(model, device, train_loader, optimizer):
         optimizer.step()
         y_pred = model_out.argmax(dim=1, keepdim=True)
         correct += y_pred.eq(y_train.view_as(y_pred)).sum().item()
-    print('Train: ', correct / len(train_loader.dataset))
     return correct / len(train_loader.dataset), total_loss/len(train_loader.dataset)
 
 # Test model
@@ -59,13 +62,7 @@ def test(model, device, test_loader):
             model_out = model(X_test)
             pred = model_out.argmax(dim=1, keepdim=True)
             correct += pred.eq(y_test.view_as(pred)).sum().item()
-    print('Test: ', correct / len(test_loader.dataset))
     return correct / len(test_loader.dataset)
-
-
-use_cuda = torch.cuda.is_available()
-torch.manual_seed(1)
-device = torch.device("cuda" if use_cuda else "cpu")
 
 # Change range of values to [0,1]
 trnsfrm = transforms.Compose([transforms.ToTensor()])
@@ -74,13 +71,12 @@ train_loader = torch.utils.data.DataLoader(datasets.CIFAR10('../data', train=Tru
 test_loader = torch.utils.data.DataLoader(datasets.CIFAR10('../data', train=False, transform=trnsfrm), 256)
 
 model = Net().to(device)
-optimizer = optim.Adam(model.parameters(), lr=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-for epoch in range(1, 20):
+for epoch in range(1, 40):
     start = time.time()
-    print('------------\nepoch: ', epoch)
-    train(model, device, train_loader, optimizer)
-    test(model, device, test_loader)
-    print(time.time()-start, 's\n')
+    trn_acc, trn_loss = train(model, device, train_loader, optimizer)
+    tst_acc = test(model, device, test_loader)
+    print('--------------\nEpoch:\t{}\nTrain:\t{:.4f}\nTest: \t{:.4f}\nTime:\t{:.4f}s'.format(epoch, trn_acc, tst_acc, time.time()-start))
 
 #torch.save(model.state_dict(), "CNN_model.pt")
