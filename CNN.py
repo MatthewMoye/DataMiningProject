@@ -31,33 +31,45 @@ class Net1(nn.Module):
         self.fc3 = nn.Linear(512, 10)
 
     def forward(self, x):
+        # Conv 1
         x = self.conv1(x)
         x = self.norm1(x)
         x = F.relu(x)
+
+        # Conv 2
         x = self.conv2(x)
         x = self.norm2(x)
         x = F.relu(x)
+
+        # Conv 3
         x = self.conv3(x)
         x = F.relu(x)
         x = self.pool(x)
         x = self.dropout1(x)
 
+        # Conv 4
         x = self.conv4(x)
         x = self.norm3(x)
         x = F.relu(x)
+
+        # Conv 5
         x = self.conv5(x)
         x = F.relu(x)
         x = self.pool(x)
         x = self.dropout1(x)
 
+        # Conv 6
         x = self.conv6(x)
         x = self.norm4(x)
         x = F.relu(x)
+        
+        # Conv 7
         x = self.conv7(x)
         x = F.relu(x)
         x = self.pool(x)
         x = self.dropout1(x)
 
+        # Fully Connected
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
         x = self.dropout2(x)
@@ -105,13 +117,11 @@ test_loader = torch.utils.data.DataLoader(datasets.CIFAR10('data/', train=False,
 
 model = Net1().to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.5)
 
-for epoch in range(1, 30):
+for epoch in range(40):
     start = time.time()
     trn_acc, trn_loss = train(model, device, train_loader, optimizer)
     tst_acc = test(model, device, test_loader)
     scheduler.step()
-    print('--------------\nEpoch:\t{}\nTrain:\t{:.4f}\nTest: \t{:.4f}\nTime:\t{:.4f}s'.format(epoch, trn_acc, tst_acc, time.time()-start))
-
-#torch.save(model.state_dict(), "CNN_model.pt")
+    print('--------------\nEpoch:\t{}\nTrain:\t{:.4f}\nTest: \t{:.4f}\nTime:\t{:.4f}s'.format(epoch+1, trn_acc, tst_acc, time.time()-start))
