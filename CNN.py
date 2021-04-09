@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
@@ -117,11 +118,33 @@ test_loader = torch.utils.data.DataLoader(datasets.CIFAR10('data/', train=False,
 
 model = Net1().to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.5)
 
+# https://discuss.pytorch.org/t/adaptive-learning-rate/320/3
+def adjust_learning_rate(optimizer, lr):
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+train_acc = []
+test_acc = []
+
+out_string = '--------------\nEpoch:\t{}\nTrain:\t{:.4f}\nTest: \t{:.4f}\nTime:\t{:.4f}s'
 for epoch in range(40):
     start = time.time()
     trn_acc, trn_loss = train(model, device, train_loader, optimizer)
     tst_acc = test(model, device, test_loader)
-    scheduler.step()
-    print('--------------\nEpoch:\t{}\nTrain:\t{:.4f}\nTest: \t{:.4f}\nTime:\t{:.4f}s'.format(epoch+1, trn_acc, tst_acc, time.time()-start))
+    train_acc.append(trn_acc)
+    test_acc.append(tst_acc)
+    if epoch == 15:
+        adjust_learning_rate(optimizer, 5e-4)
+    elif epoch == 30:
+        adjust_learning_rate(optimizer, 1e-4)
+    print(out_string.format(epoch+1, trn_acc, tst_acc, time.time()-start))
+
+
+fig, axs = plt.subplots(1, 1, figsize=(6,6))
+axs.plot(range(1,41),train_acc, label='Train')
+axs.plot(range(1,41),test_acc, label='Test')
+axs.set(title="CNN Accuracy", ylabel="Accuracy", xlabel="Epoch")
+axs.legend(loc="lower right")
+plt.savefig("CNN_accuracy.png")
+plt.clf()
