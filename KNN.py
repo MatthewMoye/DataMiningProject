@@ -4,6 +4,7 @@ from keras.datasets import cifar10
 from sklearn import svm
 from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
+import matplotlib.pyplot as matplot
 
 # Set seed for replicable results
 np.random.seed(1)
@@ -41,19 +42,43 @@ test_img, test_lbl = data_subset(test_img, test_lbl, test_subset)
 
 # KNN Method
 
-timerStart = time.time()
+numberNeighbors = []
+times = []
+accuracies = []
 
-# Test for 5 neighbors (TODO: test for a larger number and different range of neighbors)
-knn = KNeighborsClassifier(n_neighbors=5)
+for n in range(1,16):
+    timerStart = time.time()
 
-knn.fit(train_img, train_lbl)
-lblPrediction = knn.predict(test_img)
+    knn = KNeighborsClassifier(n_neighbors=n)
 
-timerEnd = time.time()
+    knn.fit(train_img, train_lbl)
+    lblPrediction = knn.predict(test_img)
 
-timeToRun = timerEnd - timerStart
+    timerEnd = time.time()
 
-modelAccuracy = metrics.accuracy_score(test_lbl, lblPrediction)
+    timeToRun = timerEnd - timerStart
 
-print("Time to run: ", timeToRun, "\n")
-print("Accuracy: ", modelAccuracy, "\n")
+    modelAccuracy = metrics.accuracy_score(test_lbl, lblPrediction)
+
+    numberNeighbors.append(n)
+    print("Number of neighbors: ", n, "\n")
+
+    times.append(timeToRun)
+    print("Time to run: ", timeToRun, "\n")
+
+    accuracies.append(modelAccuracy)
+    print("Accuracy: ", modelAccuracy, "\n")
+
+print("Accuracies: ", accuracies)
+print("Times: ", times)
+matplot.xticks(numberNeighbors)
+fig, axs = matplot.subplots(1, 1, figsize=(10, 10))
+axs.plot(numberNeighbors, accuracies, color="red", marker="o")
+# Plot settings
+axs.set_ylabel("Accuracy", color="red")
+axs.set(title="KNN accuracy plot", ylabel="Accuracy", xlabel="Neighbors")
+axs2 = axs.twinx()
+axs2.plot(numberNeighbors, times, color="blue", marker="o")
+axs2.set_ylabel("Time to run", color="blue")
+matplot.savefig("KNN.png")
+matplot.clf()
