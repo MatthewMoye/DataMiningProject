@@ -11,6 +11,8 @@ from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
+random.seed(1)
+
 # Load dataset
 (train_img, train_lbl), (test_img, test_lbl) = cifar10.load_data()
 
@@ -24,7 +26,24 @@ test_lbl = np.reshape(test_lbl, -1)
 train_img = train_img/255
 test_img = test_img/255
 
-# KNN Method
+# Get subset of dataset passed in that has ten class labels
+def data_subset(images, labels, subset_size):
+    label_list = []
+    for i in range(10):
+        label_list += np.array(np.where(labels == i)).tolist()[0][0:subset_size]
+    random.shuffle(label_list)
+    return images[label_list,:], labels[label_list]
+
+use_subset = False
+
+if use_subset:
+    train_subset = 1000
+    test_subset = int(train_subset/10)
+    # Create a subset for train images
+    train_img, train_lbl = data_subset(train_img, train_lbl, train_subset)
+
+    # Create a subset for test images
+    test_img, test_lbl = data_subset(test_img, test_lbl, test_subset)
 
 numberNeighbors = []
 times = []
@@ -41,9 +60,9 @@ for n in range(1,31):
     modelAccuracy = metrics.accuracy_score(test_lbl, lblPrediction)
 
     numberNeighbors.append(n)
-    print("Number of neighbors: ", n, "\n")
+    print("Number of neighbors: ", n)
     times.append(timeToRun)
-    print("Time to run: ", timeToRun, "\n")
+    print("Time to run: ", timeToRun)
     accuracies.append(modelAccuracy)
     print("Accuracy: ", modelAccuracy, "\n")
 
@@ -59,5 +78,5 @@ axs.set(title="KNN accuracy plot", ylabel="Accuracy", xlabel="Neighbors")
 axs2 = axs.twinx()
 axs2.plot(numberNeighbors, times, color="blue", marker="o")
 axs2.set_ylabel("Time to run", color="blue")
-plt.savefig("KNN.png")
+plt.savefig("output/KNN.png")
 plt.clf()
