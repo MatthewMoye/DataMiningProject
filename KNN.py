@@ -31,7 +31,7 @@ times = []
 accuracies = []
 
 # Run KNN on different range of neighbors
-for n in range(1,16):
+for n in range(1,31):
     timerStart = time.time()
     knn = KNeighborsClassifier(n_neighbors=n)
     knn.fit(train_img, train_lbl)
